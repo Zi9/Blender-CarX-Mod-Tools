@@ -6,6 +6,12 @@ import bmesh
 
 EXPORTER_VERSION = 1
 
+TEXTYPES = {'dds': 0,
+            'png': 1,
+            'jpg': 2,
+            'jpeg': 2,
+            'tga': 3}
+
 def set_mat(ctx, phymat):
     for i in ctx.selected_objects:
         i['phys_material'] = phymat
@@ -146,9 +152,9 @@ class CXMap_Export(bpy.types.Operator):
         fw(pack('60x'))  # pad
 
         # OBJECTS
-        objcount = 0
         objstart = file.tell()
         objsz = 0
+        objcount = 0
         for o in bpy.data.collections['MapMod'].objects:
             fw(pack('3s', b'OBJ'))
             fw(pack('B', len(o.name)))
@@ -163,6 +169,9 @@ class CXMap_Export(bpy.types.Operator):
                     o.scale[0],
                     o.scale[1],
                     o.scale[2]))
+            if len(o.material_slots) > 1:
+                print('WARNING: Object ' + o.name +
+                      ' contains more than 1 material, this is not supported')
             fw(pack('B', len(o.material_slots[0].name)))
             fw(pack(str(len(o.material_slots[0].name))+'s',
                     o.material_slots[0].name.encode('UTF-8')))
@@ -190,21 +199,55 @@ class CXMap_Export(bpy.types.Operator):
                         poly.vertices[1],
                         poly.vertices[2]))
             objcount = objcount + 1
-        objsz = file.tell()
+        objsz = file.tell() - objstart
 
         # MATERIALS
+        matstart = file.tell()
+        matsz = 0
+        matcount = 0
+        texcache = []
+        for mat in bpy.data.materials:
+            fw(pack('3s', b'MAT'))
+            fw(pack('B', len(mat.name)))
+            fw(pack(str(len(mat.name))+'s', mat.name.encode('UTF-8')))
+            img = mat.node_tree.nodes['Image Texture'].image
+            if img not in texcache:
+                texcache.append(img)
+            fw(pack('I', texcache.index(img)))
 
+            matcount = matcount + 1
+        matsz = file.tell() - matstart
+
+        # TEXTURES
+        texstart = file.tell()
+        texsz = 0
+        texcount = 0
+        for texture in texcache:
+            fw(pack('3s', b'TEX'))
+            fw(pack('B', len(texture.name)))
+            fw(pack(str(len(texture.name))+'s', texture.name.encode('UTF-8')))
+            fw(pack('B', TEXTYPES[texture.name.split('.')[-1]]))
+            texpath = bpy.path.abspath(texture.filepath)
+            with open(texpath, 'rb') as texf:
+                texf.seek(0, 2)
+                fw(pack('I', texf.tell()))
+                texf.seek(0)
+                fw(texf.read())
+            texcount = texcount + 1
+        texsz = file.tell() - texstart
+
+        # FINALIZING
         file.seek(8)
         fw(pack('9I',
                 objstart, objsz, objcount,
-                0, 0, 0,
-                0, 0, 0))
+                matstart, matsz, matcount,
+                texstart, texsz, texcount))
         file.close()
         print('Exported version ' +
               str(EXPORTER_VERSION) +
               ' CarX Mod Map')
         endtime = time.time()
-        print('Exporting took ' + str(endtime-starttime))
+        print('Exporting took ' + str(endtime-starttime) + ' seconds')
         return {'FINISHED'}
 
     def invoke(self, context, event):
