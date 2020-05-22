@@ -151,11 +151,52 @@ class CXMap_Export(bpy.types.Operator):
             fw(pack('24x'))
         fw(pack('60x'))  # pad
 
+        # TEXTURES
+        texstart = file.tell()
+        texcount = 0
+        texcache = []
+        for mat in bpy.data.materials:
+            img = mat.node_tree.nodes['Image Texture'].image
+            if img not in texcache:
+                texcache.append(img)
+        print(f'Texcache has {len(texcache)} items')
+        for texture in texcache:
+            fw(pack('3s', b'TEX'))
+            print(f'{texcount}: Writing texture {texture.name}')
+            fw(pack('B', len(texture.name)))
+            fw(pack(str(len(texture.name))+'s', texture.name.encode('UTF-8')))
+            fw(pack('B', TEXTYPES[texture.name.split('.')[-1]]))
+            texpath = bpy.path.abspath(texture.filepath)
+            with open(texpath, 'rb') as texf:
+                texf.seek(0, 2)
+                fw(pack('I', texf.tell()))
+                texf.seek(0)
+                fw(texf.read())
+            texcount = texcount + 1
+        texsz = file.tell() - texstart
+
+        # MATERIALS
+        matstart = file.tell()
+        matcount = 0
+        for mat in bpy.data.materials:
+            print(f'{matcount}: Writing material {mat.name}')
+            fw(pack('3s', b'MAT'))
+            fw(pack('B', len(mat.name)))
+            fw(pack(str(len(mat.name))+'s', mat.name.encode('UTF-8')))
+            if 'alphaflag' in mat:
+                fw(pack('B', mat['alphaflag']))
+            else:
+                fw(pack('B', 0))
+            fw(pack('I', texcache.index(img)))
+
+            matcount = matcount + 1
+        matsz = file.tell() - matstart
+
         # OBJECTS
         objstart = file.tell()
-        objsz = 0
         objcount = 0
         for o in bpy.data.collections['MapMod'].objects:
+            print(f'{objcount}: Writing object {o.name}')
             fw(pack('3s', b'OBJ'))
             fw(pack('B', len(o.name)))
             fw(pack(str(len(o.name))+'s', o.name.encode('UTF-8')))
@@ -187,8 +228,8 @@ class CXMap_Export(bpy.types.Operator):
             fw(pack('I', len(o.data.vertices)))
             for vert in o.data.vertices:
                 fw(pack('3f', vert.co[0], vert.co[1], vert.co[2]))
-            for vert in o.data.vertices:
-                fw(pack('3f', vert.normal[0], vert.normal[1], vert.normal[2]))
+            # for vert in o.data.vertices:
+                # fw(pack('3f', vert.normal[0], vert.normal[1], vert.normal[2]))
             fw(pack('I', len(o.data.uv_layers.active.data)))
             for uvd in o.data.uv_layers.active.data:
                 fw(pack('2f', uvd.uv[0], uvd.uv[1]))
@@ -201,47 +242,12 @@ class CXMap_Export(bpy.types.Operator):
             objcount = objcount + 1
         objsz = file.tell() - objstart
 
-        # MATERIALS
-        matstart = file.tell()
-        matsz = 0
-        matcount = 0
-        texcache = []
-        for mat in bpy.data.materials:
-            fw(pack('3s', b'MAT'))
-            fw(pack('B', len(mat.name)))
-            fw(pack(str(len(mat.name))+'s', mat.name.encode('UTF-8')))
-            img = mat.node_tree.nodes['Image Texture'].image
-            if img not in texcache:
-                texcache.append(img)
-            fw(pack('I', texcache.index(img)))
-
-            matcount = matcount + 1
-        matsz = file.tell() - matstart
-
-        # TEXTURES
-        texstart = file.tell()
-        texsz = 0
-        texcount = 0
-        for texture in texcache:
-            fw(pack('3s', b'TEX'))
-            fw(pack('B', len(texture.name)))
-            fw(pack(str(len(texture.name))+'s', texture.name.encode('UTF-8')))
-            fw(pack('B', TEXTYPES[texture.name.split('.')[-1]]))
-            texpath = bpy.path.abspath(texture.filepath)
-            with open(texpath, 'rb') as texf:
-                texf.seek(0, 2)
-                fw(pack('I', texf.tell()))
-                texf.seek(0)
-                fw(texf.read())
-            texcount = texcount + 1
-        texsz = file.tell() - texstart
-
         # FINALIZING
         file.seek(8)
         fw(pack('9I',
-                objstart, objsz, objcount,
+                texstart, texsz, texcount,
                 matstart, matsz, matcount,
-                texstart, texsz, texcount))
+                objstart, objsz, objcount))
         file.close()
         print('Exported version ' +
               str(EXPORTER_VERSION) +
