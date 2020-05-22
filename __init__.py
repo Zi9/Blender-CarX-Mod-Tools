@@ -3,7 +3,7 @@ from . import MapTools
 
 
 bl_info = {
-    'name': 'CarX Mod Tools',
+    'name': 'Zi9\'s CarX Mod Tools',
     'description': 'Addon for creating mods for CarX Drift Racing Online',
     'author': 'Zi9',
     'version': (0, 2, 0),
