@@ -9,8 +9,13 @@ types = ['road',
          'gravel',
          'icyroad',
          'dirt',
+         'alpha',
          'nocol',
-         'rb']
+         'rb',
+         'alphanocol',
+         'alpharb',
+         'nocolrb',
+         'alphanocolrb']
 
 def prefix(ctx, phymat):
     for i in ctx.selected_objects:
@@ -84,6 +89,14 @@ class CXMap_SetIcyRoad(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class CXMap_SetAlpha(bpy.types.Operator):
+    bl_idname = 'object.cxmap_alpha'
+    bl_label = 'Alpha'
+    def execute(self, context):
+        prefix(context, 'alpha')
+        return {'FINISHED'}
+
+
 class CXMap_SetNoCol(bpy.types.Operator):
     bl_idname = 'object.cxmap_nocol'
     bl_label = 'No Collision'
@@ -97,6 +110,38 @@ class CXMap_SetRigidbody(bpy.types.Operator):
     bl_label = 'Rigidbody'
     def execute(self, context):
         prefix(context, 'rb')
+        return {'FINISHED'}
+
+
+class CXMap_SetAlphaNoCol(bpy.types.Operator):
+    bl_idname = 'object.cxmap_alphanocol'
+    bl_label = 'Alpha + No Collision'
+    def execute(self, context):
+        prefix(context, 'alphanocol')
+        return {'FINISHED'}
+
+
+class CXMap_SetAlphaRigidbody(bpy.types.Operator):
+    bl_idname = 'object.cxmap_alpharigidbody'
+    bl_label = 'Alpha + Rigidbody'
+    def execute(self, context):
+        prefix(context, 'alpharb')
+        return {'FINISHED'}
+
+
+class CXMap_SetNoColRigidbody(bpy.types.Operator):
+    bl_idname = 'object.cxmap_nocolrigidbody'
+    bl_label = 'No Collision + Rigidbody'
+    def execute(self, context):
+        prefix(context, 'nocolrb')
+        return {'FINISHED'}
+
+
+class CXMap_SetAlphaNoColRigidbody(bpy.types.Operator):
+    bl_idname = 'object.cxmap_alphanocolrb'
+    bl_label = 'Alpha + No Collision + Rigidbody'
+    def execute(self, context):
+        prefix(context, 'alphanocolrb')
         return {'FINISHED'}
 
 # class CXMap_CreateSpawn(bpy.types.Operator):
@@ -133,8 +178,13 @@ class CXMap_Panel(bpy.types.Panel):
         self.layout.operator(CXMap_SetDirt.bl_idname, icon='MOD_SMOOTH')
         self.layout.operator(CXMap_SetIcyRoad.bl_idname, icon='TRACKING')
         self.layout.label(text='Set object type', icon='OUTLINER_OB_MESH')
-        self.layout.operator(CXMap_SetNoCol.bl_idname, icon='PIVOT_MEDIAN')
+        self.layout.operator(CXMap_SetAlpha.bl_idname, icon='IMAGE_ALPHA')
+        self.layout.operator(CXMap_SetNoCol.bl_idname, icon='MOD_SOLIDIFY')
         self.layout.operator(CXMap_SetRigidbody.bl_idname, icon='RIGID_BODY')
+        self.layout.operator(CXMap_SetAlphaNoCol.bl_idname)
+        self.layout.operator(CXMap_SetAlphaRigidbody.bl_idname)
+        self.layout.operator(CXMap_SetNoColRigidbody.bl_idname)
+        self.layout.operator(CXMap_SetAlphaNoColRigidbody.bl_idname)
         # self.layout.label(text='Spawnpoint', icon='EMPTY_AXIS')
         # self.layout.operator(CXMap_CreateSpawn.bl_idname, icon='MOD_ARMATURE')
 
@@ -147,8 +197,13 @@ def register():
     bpy.utils.register_class(CXMap_SetGravel)
     bpy.utils.register_class(CXMap_SetDirt)
     bpy.utils.register_class(CXMap_SetIcyRoad)
+    bpy.utils.register_class(CXMap_SetAlpha)
     bpy.utils.register_class(CXMap_SetNoCol)
     bpy.utils.register_class(CXMap_SetRigidbody)
+    bpy.utils.register_class(CXMap_SetAlphaNoCol)
+    bpy.utils.register_class(CXMap_SetAlphaRigidbody)
+    bpy.utils.register_class(CXMap_SetNoColRigidbody)
+    bpy.utils.register_class(CXMap_SetAlphaNoColRigidbody)
     # bpy.utils.register_class(CXMap_CreateSpawn)
     bpy.utils.register_class(CXMap_Panel)
 
@@ -162,7 +217,12 @@ def unregister():
     bpy.utils.unregister_class(CXMap_SetGravel)
     bpy.utils.unregister_class(CXMap_SetDirt)
     bpy.utils.unregister_class(CXMap_SetIcyRoad)
+    bpy.utils.unregister_class(CXMap_SetAlpha)
     bpy.utils.unregister_class(CXMap_SetNoCol)
     bpy.utils.unregister_class(CXMap_SetRigidbody)
+    bpy.utils.unregister_class(CXMap_SetAlphaNoCol)
+    bpy.utils.unregister_class(CXMap_SetAlphaRigidbody)
+    bpy.utils.unregister_class(CXMap_SetNoColRigidbody)
+    bpy.utils.unregister_class(CXMap_SetAlphaNoColRigidbody)
     # bpy.utils.unregister_class(CXMap_CreateSpawn)
     bpy.utils.unregister_class(CXMap_Panel)
