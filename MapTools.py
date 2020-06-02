@@ -9,7 +9,7 @@ types = ['road',
          'gravel',
          'icyroad',
          'dirt',
-         'tree',
+         'nocol',
          'rb']
 
 def prefix(ctx, phymat):
@@ -84,11 +84,11 @@ class CXMap_SetIcyRoad(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CXMap_SetTree(bpy.types.Operator):
-    bl_idname = 'object.cxmap_tree'
-    bl_label = 'Tree'
+class CXMap_SetNoCol(bpy.types.Operator):
+    bl_idname = 'object.cxmap_nocol'
+    bl_label = 'No Collision'
     def execute(self, context):
-        prefix(context, 'tree')
+        prefix(context, 'nocol')
         return {'FINISHED'}
 
 
@@ -133,7 +133,7 @@ class CXMap_Panel(bpy.types.Panel):
         self.layout.operator(CXMap_SetDirt.bl_idname, icon='MOD_SMOOTH')
         self.layout.operator(CXMap_SetIcyRoad.bl_idname, icon='TRACKING')
         self.layout.label(text='Set object type', icon='OUTLINER_OB_MESH')
-        self.layout.operator(CXMap_SetTree.bl_idname, icon='ORIENTATION_LOCAL')
+        self.layout.operator(CXMap_SetNoCol.bl_idname, icon='PIVOT_MEDIAN')
         self.layout.operator(CXMap_SetRigidbody.bl_idname, icon='RIGID_BODY')
         # self.layout.label(text='Spawnpoint', icon='EMPTY_AXIS')
         # self.layout.operator(CXMap_CreateSpawn.bl_idname, icon='MOD_ARMATURE')
@@ -147,7 +147,7 @@ def register():
     bpy.utils.register_class(CXMap_SetGravel)
     bpy.utils.register_class(CXMap_SetDirt)
     bpy.utils.register_class(CXMap_SetIcyRoad)
-    bpy.utils.register_class(CXMap_SetTree)
+    bpy.utils.register_class(CXMap_SetNoCol)
     bpy.utils.register_class(CXMap_SetRigidbody)
     # bpy.utils.register_class(CXMap_CreateSpawn)
     bpy.utils.register_class(CXMap_Panel)
@@ -162,7 +162,7 @@ def unregister():
     bpy.utils.unregister_class(CXMap_SetGravel)
     bpy.utils.unregister_class(CXMap_SetDirt)
     bpy.utils.unregister_class(CXMap_SetIcyRoad)
-    bpy.utils.unregister_class(CXMap_SetTree)
+    bpy.utils.unregister_class(CXMap_SetNoCol)
     bpy.utils.unregister_class(CXMap_SetRigidbody)
     # bpy.utils.unregister_class(CXMap_CreateSpawn)
     bpy.utils.unregister_class(CXMap_Panel)
