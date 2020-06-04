@@ -12,119 +12,33 @@ objtypes = ['road',
             'nocol',
             'rb']
 
-def prefix(ctx, phymat):
-    for i in ctx.selected_objects:
-        if i.name.split('_')[0] in objtypes:
-            i.name = i.name.replace(i.name.split('_')[0], phymat, 1)
-        else:
-            i.name = phymat + '_' + i.name
-
-def alphaprocess(ctx, enable):
-    for o in ctx.selected_objects:
-        for mslot in o.material_slots:
-            if enable:
-                if not mslot.material.name.startswith('alpha_'):
-                    mslot.material.name = 'alpha_' + mslot.material.name
+class CXMap_SetPrefix(bpy.types.Operator):
+    bl_idname = 'object.cxmap_setpfx'
+    bl_label = 'Set Prefix'
+    pfx = bpy.props.StringProperty()
+    def execute(self, context):
+        for i in context.selected_objects:
+            if i.name.split('_')[0] in objtypes:
+                i.name = i.name.replace(i.name.split('_')[0], self.pfx, 1)
             else:
-                if mslot.material.name.startswith('alpha_'):
-                    mslot.material.name = mslot.material.name.replace('alpha_', '', 1)
-
-
-class CXMap_SetAsphalt(bpy.types.Operator):
-    bl_idname = 'object.cxmap_road'
-    bl_label = 'Asphalt'
-    def execute(self, context):
-        prefix(context, 'road')
-        return {'FINISHED'}
-
-
-class CXMap_SetGrass(bpy.types.Operator):
-    bl_idname = 'object.cxmap_grass'
-    bl_label = 'Grass'
-    def execute(self, context):
-        prefix(context, 'grass')
-        return {'FINISHED'}
-
-
-class CXMap_SetCurb(bpy.types.Operator):
-    bl_idname = 'object.cxmap_curb'
-    bl_label = 'Curb'
-    def execute(self, context):
-        prefix(context, 'kerb')
-        return {'FINISHED'}
-
-
-class CXMap_SetSand(bpy.types.Operator):
-    bl_idname = 'object.cxmap_sand'
-    bl_label = 'Sand'
-    def execute(self, context):
-        prefix(context, 'sand')
-        return {'FINISHED'}
-
-
-class CXMap_SetSnow(bpy.types.Operator):
-    bl_idname = 'object.cxmap_snow'
-    bl_label = 'Snow'
-    def execute(self, context):
-        prefix(context, 'snow')
-        return {'FINISHED'}
-
-
-class CXMap_SetGravel(bpy.types.Operator):
-    bl_idname = 'object.cxmap_gravel'
-    bl_label = 'Gravel'
-    def execute(self, context):
-        prefix(context, 'gravel')
-        return {'FINISHED'}
-
-
-class CXMap_SetDirt(bpy.types.Operator):
-    bl_idname = 'object.cxmap_dirt'
-    bl_label = 'Dirt'
-    def execute(self, context):
-        prefix(context, 'dirt')
-        return {'FINISHED'}
-
-
-class CXMap_SetIcyRoad(bpy.types.Operator):
-    bl_idname = 'object.cxmap_icyroad'
-    bl_label = 'Icy Road'
-    def execute(self, context):
-        prefix(context, 'icyroad')
-        return {'FINISHED'}
-
-
-class CXMap_SetNoCol(bpy.types.Operator):
-    bl_idname = 'object.cxmap_nocol'
-    bl_label = 'No Collision'
-    def execute(self, context):
-        prefix(context, 'nocol')
-        return {'FINISHED'}
-
-
-class CXMap_SetRigidbody(bpy.types.Operator):
-    bl_idname = 'object.cxmap_rigidbody'
-    bl_label = 'Rigidbody'
-    def execute(self, context):
-        prefix(context, 'rb')
+                i.name = self.pfx + '_' + i.name
         return {'FINISHED'}
 
 
 class CXMap_SetAlpha(bpy.types.Operator):
     bl_idname = 'object.cxmap_alpha'
     bl_label = 'Enable'
+    alpha = bpy.props.BoolProperty()
     def execute(self, context):
-        alphaprocess(context, True)
+        for o in context.selected_objects:
+            for mslot in o.material_slots:
+                if self.alpha:
+                    if not mslot.material.name.startswith('alpha_'):
+                        mslot.material.name = 'alpha_' + mslot.material.name
+                else:
+                    if mslot.material.name.startswith('alpha_'):
+                        mslot.material.name = mslot.material.name.replace('alpha_', '', 1)
         return {'FINISHED'}
-
-
-class CXMap_SetNoAlpha(bpy.types.Operator):
-    bl_idname = 'object.cxmap_noalpha'
-    bl_label = 'Disable'
-    def execute(self, context):
-        alphaprocess(context, False)
-        return {'FINISHED'}
-
 
 # class CXMap_CreateSpawn(bpy.types.Operator):
     # bl_idname = 'object.cxmap_spawnpoint'
@@ -139,8 +53,6 @@ class CXMap_SetNoAlpha(bpy.types.Operator):
         # context.active_object.name = 'Spawnpoint'
         # return {'FINISHED'}
 
-
-
 class CXMap_Panel(bpy.types.Panel):
     bl_idname = 'OBJECT_PT_CXMaps'
     bl_label = 'CarX Map Tools'
@@ -151,53 +63,57 @@ class CXMap_Panel(bpy.types.Panel):
 
     def draw(self, context):
         self.layout.label(text='Set physics material', icon='HAND')
-        self.layout.operator(CXMap_SetAsphalt.bl_idname, icon='AUTO')
-        self.layout.operator(CXMap_SetGrass.bl_idname, icon='SEQ_HISTOGRAM')
-        self.layout.operator(CXMap_SetCurb.bl_idname, icon='PARTICLEMODE')
-        self.layout.operator(CXMap_SetSand.bl_idname, icon='FORCE_FORCE')
-        self.layout.operator(CXMap_SetSnow.bl_idname, icon='FREEZE')
-        self.layout.operator(CXMap_SetGravel.bl_idname, icon='MOD_OCEAN')
-        self.layout.operator(CXMap_SetDirt.bl_idname, icon='MOD_SMOOTH')
-        self.layout.operator(CXMap_SetIcyRoad.bl_idname, icon='TRACKING')
+        self.layout.operator(CXMap_SetPrefix.bl_idname,
+                             text='Asphalt',
+                             icon='AUTO').pfx = 'road'
+        self.layout.operator(CXMap_SetPrefix.bl_idname,
+                             text='Grass',
+                             icon='SEQ_HISTOGRAM').pfx = 'grass'
+        self.layout.operator(CXMap_SetPrefix.bl_idname,
+                             text='Curb',
+                             icon='PARTICLEMODE').pfx = 'kerb'
+        self.layout.operator(CXMap_SetPrefix.bl_idname,
+                             text='Sand',
+                             icon='FORCE_FORCE').pfx = 'sand'
+        self.layout.operator(CXMap_SetPrefix.bl_idname,
+                             text='Snow',
+                             icon='FREEZE').pfx = 'snow'
+        self.layout.operator(CXMap_SetPrefix.bl_idname,
+                             text='Gravel',
+                             icon='MOD_OCEAN').pfx = 'gravel'
+        self.layout.operator(CXMap_SetPrefix.bl_idname,
+                             text='Dirt',
+                             icon='MOD_SMOOTH').pfx = 'dirt'
+        self.layout.operator(CXMap_SetPrefix.bl_idname,
+                             text='Icy Road',
+                             icon='TRACKING').pfx = 'icyroad'
+
         self.layout.label(text='Set object type', icon='OUTLINER_OB_MESH')
-        self.layout.operator(CXMap_SetNoCol.bl_idname, icon='MOD_SOLIDIFY')
-        self.layout.operator(CXMap_SetRigidbody.bl_idname, icon='RIGID_BODY')
+        self.layout.operator(CXMap_SetPrefix.bl_idname,
+                             text='No Collision',
+                             icon='MOD_SOLIDIFY').pfx = 'nocol'
+        self.layout.operator(CXMap_SetPrefix.bl_idname,
+                             text='Rigidbody',
+                             icon='RIGID_BODY').pfx = 'rb'
+
         self.layout.label(text='Set alpha mode', icon='IMAGE_ALPHA')
         row = self.layout.row(align=True)
-        row.operator(CXMap_SetAlpha.bl_idname, icon='DECORATE_ANIMATE')
-        row.operator(CXMap_SetNoAlpha.bl_idname, icon='DECORATE_KEYFRAME')
+        row.operator(CXMap_SetAlpha.bl_idname,
+                     text='Enable',
+                     icon='DECORATE_ANIMATE').alpha = True
+        row.operator(CXMap_SetAlpha.bl_idname,
+                     text='Disable',
+                     icon='DECORATE_KEYFRAME').alpha = False
         # self.layout.label(text='Spawnpoint', icon='EMPTY_AXIS')
         # self.layout.operator(CXMap_CreateSpawn.bl_idname, icon='MOD_ARMATURE')
 
 def register():
-    bpy.utils.register_class(CXMap_SetAsphalt)
-    bpy.utils.register_class(CXMap_SetGrass)
-    bpy.utils.register_class(CXMap_SetCurb)
-    bpy.utils.register_class(CXMap_SetSand)
-    bpy.utils.register_class(CXMap_SetSnow)
-    bpy.utils.register_class(CXMap_SetGravel)
-    bpy.utils.register_class(CXMap_SetDirt)
-    bpy.utils.register_class(CXMap_SetIcyRoad)
-    bpy.utils.register_class(CXMap_SetNoCol)
-    bpy.utils.register_class(CXMap_SetRigidbody)
+    bpy.utils.register_class(CXMap_SetPrefix)
     bpy.utils.register_class(CXMap_SetAlpha)
-    bpy.utils.register_class(CXMap_SetNoAlpha)
-    # bpy.utils.register_class(CXMap_CreateSpawn)
     bpy.utils.register_class(CXMap_Panel)
 
 
 def unregister():
-    bpy.utils.unregister_class(CXMap_SetAsphalt)
-    bpy.utils.unregister_class(CXMap_SetGrass)
-    bpy.utils.unregister_class(CXMap_SetCurb)
-    bpy.utils.unregister_class(CXMap_SetSand)
-    bpy.utils.unregister_class(CXMap_SetSnow)
-    bpy.utils.unregister_class(CXMap_SetGravel)
-    bpy.utils.unregister_class(CXMap_SetDirt)
-    bpy.utils.unregister_class(CXMap_SetIcyRoad)
-    bpy.utils.unregister_class(CXMap_SetNoCol)
-    bpy.utils.unregister_class(CXMap_SetRigidbody)
+    bpy.utils.unregister_class(CXMap_SetPrefix)
     bpy.utils.unregister_class(CXMap_SetAlpha)
-    bpy.utils.unregister_class(CXMap_SetNoAlpha)
-    # bpy.utils.unregister_class(CXMap_CreateSpawn)
     bpy.utils.unregister_class(CXMap_Panel)
