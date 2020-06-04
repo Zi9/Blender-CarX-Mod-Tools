@@ -15,7 +15,7 @@ objtypes = ['road',
 class CXMap_SetPrefix(bpy.types.Operator):
     bl_idname = 'object.cxmap_setpfx'
     bl_label = 'Set Prefix'
-    pfx = bpy.props.StringProperty()
+    pfx: bpy.props.StringProperty()
     def execute(self, context):
         for i in context.selected_objects:
             if i.name.split('_')[0] in objtypes:
@@ -27,8 +27,8 @@ class CXMap_SetPrefix(bpy.types.Operator):
 
 class CXMap_SetAlpha(bpy.types.Operator):
     bl_idname = 'object.cxmap_alpha'
-    bl_label = 'Enable'
-    alpha = bpy.props.BoolProperty()
+    bl_label = 'Set Alpha'
+    alpha: bpy.props.BoolProperty()
     def execute(self, context):
         for o in context.selected_objects:
             for mslot in o.material_slots:
@@ -40,18 +40,22 @@ class CXMap_SetAlpha(bpy.types.Operator):
                         mslot.material.name = mslot.material.name.replace('alpha_', '', 1)
         return {'FINISHED'}
 
-# class CXMap_CreateSpawn(bpy.types.Operator):
-    # bl_idname = 'object.cxmap_spawnpoint'
-    # bl_label = 'Create Spawn Point'
+class CXMap_CreatePlaceholder(bpy.types.Operator):
+    bl_idname = 'object.cxmap_placeholder'
+    bl_label = 'Create Placeholder'
+    ptype: bpy.props.StringProperty()
 
-    # @classmethod
-    # def poll(cls, context):
-        # return True
-
-    # def execute(self, context):
-        # bpy.ops.object.empty_add(type='ARROWS', location=(0, 0, 0))
-        # context.active_object.name = 'Spawnpoint'
-        # return {'FINISHED'}
+    def execute(self, context):
+        if self.ptype == 'Spawn':
+            bpy.ops.object.empty_add(type='ARROWS')
+            context.active_object.name = 'Spawnpoint'
+        elif self.ptype == 'CameraPoint':
+            bpy.ops.object.empty_add(type='PLAIN_AXES')
+            context.active_object.name = 'CameraPoint'
+        elif self.ptype == 'Light':
+            bpy.ops.object.empty_add(type='SINGLE_ARROW')
+            context.active_object.name = 'Light'
+        return {'FINISHED'}
 
 class CXMap_Panel(bpy.types.Panel):
     bl_idname = 'OBJECT_PT_CXMaps'
@@ -104,16 +108,26 @@ class CXMap_Panel(bpy.types.Panel):
         row.operator(CXMap_SetAlpha.bl_idname,
                      text='Disable',
                      icon='DECORATE_KEYFRAME').alpha = False
-        # self.layout.label(text='Spawnpoint', icon='EMPTY_AXIS')
-        # self.layout.operator(CXMap_CreateSpawn.bl_idname, icon='MOD_ARMATURE')
+        self.layout.label(text='Map placeholders', icon='EMPTY_AXIS')
+        self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
+                             text='Create Spawnpoint',
+                             icon='MOD_ARMATURE').ptype = 'Spawn'
+        self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
+                             text='Create Camera Point',
+                             icon='VIEW_CAMERA').ptype = 'CameraPoint'
+        self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
+                             text='Create Light',
+                             icon='OUTLINER_OB_LIGHT').ptype = 'Light'
 
 def register():
     bpy.utils.register_class(CXMap_SetPrefix)
     bpy.utils.register_class(CXMap_SetAlpha)
+    bpy.utils.register_class(CXMap_CreatePlaceholder)
     bpy.utils.register_class(CXMap_Panel)
 
 
 def unregister():
     bpy.utils.unregister_class(CXMap_SetPrefix)
     bpy.utils.unregister_class(CXMap_SetAlpha)
+    bpy.utils.unregister_class(CXMap_CreatePlaceholder)
     bpy.utils.unregister_class(CXMap_Panel)
