@@ -1,3 +1,4 @@
+from math import degrees
 import bpy
 import bmesh
 
@@ -12,10 +13,12 @@ objtypes = ['road',
             'nocol',
             'rb']
 
+
 class CXMap_SetPrefix(bpy.types.Operator):
     bl_idname = 'object.cxmap_setpfx'
     bl_label = 'Set Prefix'
     pfx: bpy.props.StringProperty()
+
     def execute(self, context):
         for i in context.selected_objects:
             if i.name.split('_')[0] in objtypes:
@@ -29,6 +32,7 @@ class CXMap_SetAlpha(bpy.types.Operator):
     bl_idname = 'object.cxmap_alpha'
     bl_label = 'Set Alpha'
     alpha: bpy.props.BoolProperty()
+
     def execute(self, context):
         for o in context.selected_objects:
             for mslot in o.material_slots:
@@ -39,6 +43,7 @@ class CXMap_SetAlpha(bpy.types.Operator):
                     if mslot.material.name.startswith('alpha_'):
                         mslot.material.name = mslot.material.name.replace('alpha_', '', 1)
         return {'FINISHED'}
+
 
 class CXMap_CreatePlaceholder(bpy.types.Operator):
     bl_idname = 'object.cxmap_placeholder'
@@ -56,6 +61,58 @@ class CXMap_CreatePlaceholder(bpy.types.Operator):
             bpy.ops.object.empty_add(type='SINGLE_ARROW')
             context.active_object.name = 'Light'
         return {'FINISHED'}
+
+
+class CXMap_Export(bpy.types.Operator):
+    bl_idname = 'object.cxmap_exportmap'
+    bl_label = 'Export'
+    filepath: bpy.props.StringProperty(subtype='FILE_PATH')
+
+    def execute(self, context):
+        spawns = []
+        cameras = []
+        lights = []
+        for obj in bpy.data.objects:
+            if obj.name.startswith('Spawnpoint'):
+                spawns.append(obj)
+            elif obj.name.startswith('CameraPoint'):
+                cameras.append(obj)
+            elif obj.name.startswith('Light'):
+                lights.append(obj)
+        if not self.filepath.endswith('.obj'):
+            self.filepath = self.filepath + '.obj'
+        bpy.ops.export_scene.obj(filepath=self.filepath,
+                                 use_selection=False,
+                                 path_mode='COPY')
+        file = open(self.filepath + 'data', 'w')
+        for spwn in spawns:
+            file.write('Spawn:{0} {1} {2} {3} {4} {5}\n'
+                       .format(round(spwn.location.x, 6),
+                               round(spwn.location.y, 6),
+                               round(spwn.location.z, 6),
+                               round(degrees(spwn.rotation_euler.x), 6),
+                               round(degrees(spwn.rotation_euler.y), 6),
+                               round(degrees(spwn.rotation_euler.z), 6)))
+        for cam in cameras:
+            file.write('Camera:{0} {1} {2}\n'
+                       .format(round(cam.location.x, 6),
+                               round(cam.location.y, 6),
+                               round(cam.location.z, 6)))
+        for lgt in lights:
+            file.write('Light:{0} {1} {2} {3} {4} {5}\n'
+                       .format(round(lgt.location.x, 6),
+                               round(lgt.location.y, 6),
+                               round(lgt.location.z, 6),
+                               round(degrees(lgt.rotation_euler.x), 6),
+                               round(degrees(lgt.rotation_euler.y), 6),
+                               round(degrees(lgt.rotation_euler.z), 6)))
+        file.close()
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
 
 class CXMap_Panel(bpy.types.Panel):
     bl_idname = 'OBJECT_PT_CXMaps'
@@ -118,11 +175,17 @@ class CXMap_Panel(bpy.types.Panel):
         self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
                              text='Create Light',
                              icon='OUTLINER_OB_LIGHT').ptype = 'Light'
+        self.layout.label(text='Finalizing', icon='CHECKMARK')
+        self.layout.operator(CXMap_Export.bl_idname,
+                             text='Export Map',
+                             icon='EXPORT')
+
 
 def register():
     bpy.utils.register_class(CXMap_SetPrefix)
     bpy.utils.register_class(CXMap_SetAlpha)
     bpy.utils.register_class(CXMap_CreatePlaceholder)
+    bpy.utils.register_class(CXMap_Export)
     bpy.utils.register_class(CXMap_Panel)
 
 
@@ -130,4 +193,5 @@ def unregister():
     bpy.utils.unregister_class(CXMap_SetPrefix)
     bpy.utils.unregister_class(CXMap_SetAlpha)
     bpy.utils.unregister_class(CXMap_CreatePlaceholder)
+    bpy.utils.unregister_class(CXMap_Export)
     bpy.utils.unregister_class(CXMap_Panel)
