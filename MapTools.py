@@ -99,13 +99,14 @@ class CXMap_Export(bpy.types.Operator):
                                round(cam.location.y, 6),
                                round(cam.location.z, 6)))
         for lgt in lights:
-            file.write('Light:{0} {1} {2} {3} {4} {5}\n'
+            file.write('Light:{0} {1} {2} {3} {4} {5} {6}\n'
                        .format(round(lgt.location.x, 6),
                                round(lgt.location.y, 6),
                                round(lgt.location.z, 6),
                                round(degrees(lgt.rotation_euler.x), 6),
                                round(degrees(lgt.rotation_euler.y), 6),
-                               round(degrees(lgt.rotation_euler.z), 6)))
+                               round(degrees(lgt.rotation_euler.z), 6),
+                               round(lgt.scale.x, 6)))
         file.close()
         return {'FINISHED'}
 

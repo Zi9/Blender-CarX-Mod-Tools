@@ -6,7 +6,7 @@ bl_info = {
     'name': 'Zi9\'s CarX Mod Tools',
     'description': 'Toolkit to assist creating mods for CarX Drift Racing Online',
     'author': 'Zi9',
-    'version': (0, 8, 0),
+    'version': (0, 9, 0),
     'blender': (2, 80, 0),
     'location': '3D View',
     'category': 'Development'
