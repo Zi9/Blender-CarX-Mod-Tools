@@ -1,4 +1,3 @@
-from math import degrees
 import bpy
 import bmesh
 
@@ -86,26 +85,30 @@ class CXMap_Export(bpy.types.Operator):
                                  path_mode='COPY')
         file = open(self.filepath + 'data', 'w')
         for spwn in spawns:
-            file.write('Spawn:{0} {1} {2} {3} {4} {5}\n'
+            qrot = spwn.rotation_euler.to_quaternion()
+            file.write('Spawn:{0} {1} {2} {3} {4} {5} {6}\n'
                        .format(round(spwn.location.x, 6),
                                round(spwn.location.y, 6),
                                round(spwn.location.z, 6),
-                               round(degrees(spwn.rotation_euler.x), 6),
-                               round(degrees(spwn.rotation_euler.y), 6),
-                               round(degrees(spwn.rotation_euler.z), 6)))
+                               round(qrot.x, 6),
+                               round(qrot.y, 6),
+                               round(qrot.z, 6),
+                               round(qrot.w, 6)))
         for cam in cameras:
             file.write('Camera:{0} {1} {2}\n'
                        .format(round(cam.location.x, 6),
                                round(cam.location.y, 6),
                                round(cam.location.z, 6)))
         for lgt in lights:
-            file.write('Light:{0} {1} {2} {3} {4} {5} {6}\n'
+            qrot = lgt.rotation_euler.to_quaternion()
+            file.write('Light:{0} {1} {2} {3} {4} {5} {6} {7}\n'
                        .format(round(lgt.location.x, 6),
                                round(lgt.location.y, 6),
                                round(lgt.location.z, 6),
-                               round(degrees(lgt.rotation_euler.x), 6),
-                               round(degrees(lgt.rotation_euler.y), 6),
-                               round(degrees(lgt.rotation_euler.z), 6),
+                               round(qrot.x, 6),
+                               round(qrot.y, 6),
+                               round(qrot.z, 6),
+                               round(qrot.w, 6),
                                round(lgt.scale.x, 6)))
         file.close()
         return {'FINISHED'}
