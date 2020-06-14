@@ -57,57 +57,102 @@ class CXMap_CreatePlaceholder(bpy.types.Operator):
         elif self.ptype == 'CameraPoint':
             bpy.ops.object.empty_add(type='PLAIN_AXES')
             context.active_object.name = 'CameraPoint'
-        elif self.ptype == 'Light':
-            bpy.ops.object.empty_add(type='SINGLE_ARROW')
-            context.active_object.name = 'Light'
+        elif self.ptype == 'Spot':
+            bpy.ops.object.light_add(type='SPOT')
+        elif self.ptype == 'Point':
+            bpy.ops.object.light_add(type='POINT')
+        elif self.ptype == 'Sun':
+            bpy.ops.object.light_add(type='SUN')
         return {'FINISHED'}
+
+
+class CXMap_ExportProps(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(default='NewMap',
+                                   name='Name',
+                                   description='Set the name of the map')
+    path: bpy.props.StringProperty(name='Path',
+                                   description='Path where to save the map')
 
 
 class CXMap_Export(bpy.types.Operator):
     bl_idname = 'object.cxmap_exportmap'
     bl_label = 'Export'
-    filepath: bpy.props.StringProperty(subtype='FILE_PATH')
+    export_type: bpy.props.StringProperty()
 
     def execute(self, context):
-        spawns = []
-        cameras = []
-        lights = []
-        for obj in bpy.data.objects:
-            if obj.name.startswith('Spawnpoint'):
-                spawns.append(obj)
-            elif obj.name.startswith('CameraPoint'):
-                cameras.append(obj)
-            elif obj.name.startswith('Light'):
-                lights.append(obj)
-        if not self.filepath.endswith('.obj'):
-            self.filepath = self.filepath + '.obj'
-        bpy.ops.export_scene.obj(filepath=self.filepath,
-                                 use_selection=False,
-                                 path_mode='COPY')
-        file = open(self.filepath + 'data', 'w')
-        for spwn in spawns:
-            file.write('Spawn:{0} {1} {2} {3} {4} {5}\n'
-                       .format(round(spwn.location.x, 6),
-                               round(spwn.location.y, 6),
-                               round(spwn.location.z, 6),
-                               round(degrees(spwn.rotation_euler.x), 6),
-                               round(degrees(spwn.rotation_euler.y), 6),
-                               round(degrees(spwn.rotation_euler.z), 6)))
-        for cam in cameras:
-            file.write('Camera:{0} {1} {2}\n'
-                       .format(round(cam.location.x, 6),
-                               round(cam.location.y, 6),
-                               round(cam.location.z, 6)))
-        for lgt in lights:
-            file.write('Light:{0} {1} {2} {3} {4} {5} {6}\n'
-                       .format(round(lgt.location.x, 6),
-                               round(lgt.location.y, 6),
-                               round(lgt.location.z, 6),
-                               round(degrees(lgt.rotation_euler.x), 6),
-                               round(degrees(lgt.rotation_euler.y), 6),
-                               round(degrees(lgt.rotation_euler.z), 6),
-                               round(lgt.scale.x, 6)))
-        file.close()
+        filepath = context.scene.CX_ExpP.path + context.scene.CX_ExpP.name
+        if self.export_type == 'obj':
+            bpy.ops.export_scene.obj(filepath=filepath+'.obj',
+                                     use_selection=False,
+                                     path_mode='STRIP')
+            self.report({'INFO'}, "Exported Map")
+        else:
+            spawns = []
+            cameras = []
+            spots = []
+            points = []
+            suns = []
+            for obj in bpy.data.objects:
+                if obj.name.startswith('Spawnpoint'):
+                    spawns.append(obj)
+                elif obj.name.startswith('CameraPoint'):
+                    cameras.append(obj)
+                elif obj.name.startswith('Spot'):
+                    spots.append(obj)
+                elif obj.name.startswith('Point'):
+                    points.append(obj)
+                elif obj.name.startswith('Sun'):
+                    suns.append(obj)
+            file = open(filepath + '.objdata', 'w')
+            for spwn in spawns:
+                file.write('Spawn:{0} {1} {2} {3} {4} {5}\n'
+                           .format(round(spwn.location.x, 6),
+                                   round(spwn.location.y, 6),
+                                   round(spwn.location.z, 6),
+                                   round(degrees(spwn.rotation_euler.x), 6),
+                                   round(degrees(spwn.rotation_euler.y), 6),
+                                   round(degrees(spwn.rotation_euler.z), 6)))
+            for cam in cameras:
+                file.write('Camera:{0} {1} {2}\n'
+                           .format(round(cam.location.x, 6),
+                                   round(cam.location.y, 6),
+                                   round(cam.location.z, 6)))
+            for spt in spots:
+                file.write('SpotLight:{0} {1} {2} {3} {4} {5} {6}\n'
+                           .format(round(spt.location.x, 6),
+                                   round(spt.location.y, 6),
+                                   round(spt.location.z, 6),
+                                   round(degrees(spt.rotation_euler.x), 6),
+                                   round(degrees(spt.rotation_euler.y), 6),
+                                   round(degrees(spt.rotation_euler.z), 6),
+                                   round(spt.data.energy, 6)))
+            for pnt in points:
+                file.write('PointLight:{0} {1} {2} {3}\n'
+                           .format(round(pnt.location.x, 6),
+                                   round(pnt.location.y, 6),
+                                   round(pnt.location.z, 6),
+                                   round(pnt.data.energy, 6)))
+            for sun in suns:
+                file.write('SunLight:{0} {1} {2} {3} {4} {5} {6}\n'
+                           .format(round(sun.location.x, 6),
+                                   round(sun.location.y, 6),
+                                   round(sun.location.z, 6),
+                                   round(degrees(sun.rotation_euler.x), 6),
+                                   round(degrees(sun.rotation_euler.y), 6),
+                                   round(degrees(sun.rotation_euler.z), 6),
+                                   round(sun.data.energy, 6)))
+            file.close()
+            self.report({'INFO'}, "Exported Extra Data")
+        return {'FINISHED'}
+
+
+class CXMap_SetExportLoc(bpy.types.Operator):
+    bl_idname = 'object.cxmap_exportloc'
+    bl_label = 'Select Export Folder'
+    directory: bpy.props.StringProperty(subtype='DIR_PATH')
+
+    def execute(self, context):
+        context.scene.CX_ExpP.path = self.directory
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -124,6 +169,7 @@ class CXMap_Panel(bpy.types.Panel):
     bl_context = 'objectmode'
 
     def draw(self, context):
+        props = bpy.context.scene.CX_ExpP
         self.layout.label(text='Set physics material', icon='HAND')
         self.layout.operator(CXMap_SetPrefix.bl_idname,
                              text='Asphalt',
@@ -174,25 +220,44 @@ class CXMap_Panel(bpy.types.Panel):
                              text='Create Camera Point',
                              icon='VIEW_CAMERA').ptype = 'CameraPoint'
         self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
-                             text='Create Light',
-                             icon='OUTLINER_OB_LIGHT').ptype = 'Light'
+                             text='Create Spotlight',
+                             icon='LIGHT_SPOT').ptype = 'Spot'
+        self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
+                             text='Create Pointlight',
+                             icon='LIGHT_POINT').ptype = 'Point'
+        self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
+                             text='Create Sunlight',
+                             icon='LIGHT_SUN').ptype = 'Sun'
         self.layout.label(text='Finalizing', icon='CHECKMARK')
+        self.layout.prop(props, 'name')
+        row = self.layout.row(align=True)
+        row.prop(props, 'path')
+        row.operator(CXMap_SetExportLoc.bl_idname,
+                     text='', icon='FILE_FOLDER')
         self.layout.operator(CXMap_Export.bl_idname,
                              text='Export Map',
-                             icon='EXPORT')
+                             icon='EXPORT').export_type = 'obj'
+        self.layout.operator(CXMap_Export.bl_idname,
+                             text='Export Extra Data',
+                             icon='SHADERFX').export_type = 'data'
+
+
+classes = (CXMap_SetPrefix,
+           CXMap_SetAlpha,
+           CXMap_CreatePlaceholder,
+           CXMap_Export,
+           CXMap_ExportProps,
+           CXMap_SetExportLoc,
+           CXMap_Panel)
 
 
 def register():
-    bpy.utils.register_class(CXMap_SetPrefix)
-    bpy.utils.register_class(CXMap_SetAlpha)
-    bpy.utils.register_class(CXMap_CreatePlaceholder)
-    bpy.utils.register_class(CXMap_Export)
-    bpy.utils.register_class(CXMap_Panel)
+    for cls in classes:
+        bpy.utils.register_class(cls)
+    bpy.types.Scene.CX_ExpP = bpy.props.PointerProperty(type=CXMap_ExportProps)
 
 
 def unregister():
-    bpy.utils.unregister_class(CXMap_SetPrefix)
-    bpy.utils.unregister_class(CXMap_SetAlpha)
-    bpy.utils.unregister_class(CXMap_CreatePlaceholder)
-    bpy.utils.unregister_class(CXMap_Export)
-    bpy.utils.unregister_class(CXMap_Panel)
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+    del(bpy.types.Scene.CX_ExpP)
