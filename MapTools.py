@@ -1,4 +1,4 @@
-from math import degrees
+from math import degrees, radians
 import bpy
 import bmesh
 
@@ -64,6 +64,63 @@ class CXMap_CreatePlaceholder(bpy.types.Operator):
         elif self.ptype == 'Sun':
             bpy.ops.object.light_add(type='SUN')
         return {'FINISHED'}
+
+
+class CXMap_ImportData(bpy.types.Operator):
+    bl_idname = 'object.cxmap_importdata'
+    bl_label = 'Import objdata'
+    filepath: bpy.props.StringProperty(subtype='FILE_PATH')
+
+    def execute(self, context):
+        file = open(self.filepath, 'r')
+        for line in file.readlines():
+            otype, obd = line.split(':')
+            obd = obd.split(' ')
+            if otype == 'Spawn':
+                bpy.ops.object.empty_add(type='ARROWS')
+                context.active_object.name = 'Spawnpoint'
+                context.active_object.location.x = float(obd[0])
+                context.active_object.location.y = float(obd[1])
+                context.active_object.location.z = float(obd[2])
+                context.active_object.rotation_euler.x = radians(float(obd[3]))
+                context.active_object.rotation_euler.y = radians(float(obd[4]))
+                context.active_object.rotation_euler.z = radians(float(obd[5]))
+            elif otype == 'Camera':
+                bpy.ops.object.empty_add(type='PLAIN_AXES')
+                context.active_object.name = 'CameraPoint'
+                context.active_object.location.x = float(obd[0])
+                context.active_object.location.y = float(obd[1])
+                context.active_object.location.z = float(obd[2])
+            elif otype == 'SpotLight':
+                bpy.ops.object.light_add(type='SPOT')
+                context.active_object.location.x = float(obd[0])
+                context.active_object.location.y = float(obd[1])
+                context.active_object.location.z = float(obd[2])
+                context.active_object.rotation_euler.x = radians(float(obd[3]))
+                context.active_object.rotation_euler.y = radians(float(obd[4]))
+                context.active_object.rotation_euler.z = radians(float(obd[5]))
+                context.active_object.data.energy = float(obd[6])
+            elif otype == 'PointLight':
+                bpy.ops.object.light_add(type='POINT')
+                context.active_object.location.x = float(obd[0])
+                context.active_object.location.y = float(obd[1])
+                context.active_object.location.z = float(obd[2])
+                context.active_object.data.energy = float(obd[3])
+            elif otype == 'SunLight':
+                bpy.ops.object.light_add(type='SUN')
+                context.active_object.location.x = float(obd[0])
+                context.active_object.location.y = float(obd[1])
+                context.active_object.location.z = float(obd[2])
+                context.active_object.rotation_euler.x = radians(float(obd[3]))
+                context.active_object.rotation_euler.y = radians(float(obd[4]))
+                context.active_object.rotation_euler.z = radians(float(obd[5]))
+                context.active_object.data.energy = float(obd[6])
+        file.close()
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
 
 
 class CXMap_ExportProps(bpy.types.PropertyGroup):
@@ -171,38 +228,40 @@ class CXMap_Panel(bpy.types.Panel):
     def draw(self, context):
         props = bpy.context.scene.CX_ExpP
         self.layout.label(text='Set physics material', icon='HAND')
-        self.layout.operator(CXMap_SetPrefix.bl_idname,
-                             text='Asphalt',
-                             icon='AUTO').pfx = 'road'
-        self.layout.operator(CXMap_SetPrefix.bl_idname,
-                             text='Grass',
-                             icon='SEQ_HISTOGRAM').pfx = 'grass'
-        self.layout.operator(CXMap_SetPrefix.bl_idname,
-                             text='Curb',
-                             icon='PARTICLEMODE').pfx = 'kerb'
-        self.layout.operator(CXMap_SetPrefix.bl_idname,
-                             text='Sand',
-                             icon='FORCE_FORCE').pfx = 'sand'
-        self.layout.operator(CXMap_SetPrefix.bl_idname,
-                             text='Snow',
-                             icon='FREEZE').pfx = 'snow'
-        self.layout.operator(CXMap_SetPrefix.bl_idname,
-                             text='Gravel',
-                             icon='MOD_OCEAN').pfx = 'gravel'
-        self.layout.operator(CXMap_SetPrefix.bl_idname,
-                             text='Dirt',
-                             icon='MOD_SMOOTH').pfx = 'dirt'
-        self.layout.operator(CXMap_SetPrefix.bl_idname,
-                             text='Icy Road',
-                             icon='TRACKING').pfx = 'icyroad'
+        colflow = self.layout.column_flow(columns=2, align=True)
+        colflow.operator(CXMap_SetPrefix.bl_idname,
+                         text='Asphalt',
+                         icon='AUTO').pfx = 'road'
+        colflow.operator(CXMap_SetPrefix.bl_idname,
+                         text='Grass',
+                         icon='SEQ_HISTOGRAM').pfx = 'grass'
+        colflow.operator(CXMap_SetPrefix.bl_idname,
+                         text='Curb',
+                         icon='PARTICLEMODE').pfx = 'kerb'
+        colflow.operator(CXMap_SetPrefix.bl_idname,
+                         text='Sand',
+                         icon='FORCE_FORCE').pfx = 'sand'
+        colflow.operator(CXMap_SetPrefix.bl_idname,
+                         text='Snow',
+                         icon='FREEZE').pfx = 'snow'
+        colflow.operator(CXMap_SetPrefix.bl_idname,
+                         text='Gravel',
+                         icon='MOD_OCEAN').pfx = 'gravel'
+        colflow.operator(CXMap_SetPrefix.bl_idname,
+                         text='Dirt',
+                         icon='MOD_SMOOTH').pfx = 'dirt'
+        colflow.operator(CXMap_SetPrefix.bl_idname,
+                         text='Icy Road',
+                         icon='TRACKING').pfx = 'icyroad'
 
         self.layout.label(text='Set object type', icon='OUTLINER_OB_MESH')
-        self.layout.operator(CXMap_SetPrefix.bl_idname,
-                             text='No Collision',
-                             icon='MOD_SOLIDIFY').pfx = 'nocol'
-        self.layout.operator(CXMap_SetPrefix.bl_idname,
-                             text='Rigidbody',
-                             icon='RIGID_BODY').pfx = 'rb'
+        row = self.layout.row(align=True)
+        row.operator(CXMap_SetPrefix.bl_idname,
+                     text='No Collision',
+                     icon='MOD_SOLIDIFY').pfx = 'nocol'
+        row.operator(CXMap_SetPrefix.bl_idname,
+                     text='Rigidbody',
+                     icon='RIGID_BODY').pfx = 'rb'
 
         self.layout.label(text='Set alpha mode', icon='IMAGE_ALPHA')
         row = self.layout.row(align=True)
@@ -212,21 +271,26 @@ class CXMap_Panel(bpy.types.Panel):
         row.operator(CXMap_SetAlpha.bl_idname,
                      text='Disable',
                      icon='DECORATE_KEYFRAME').alpha = False
-        self.layout.label(text='Map placeholders', icon='EMPTY_AXIS')
-        self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
-                             text='Create Spawnpoint',
+
+        self.layout.label(text='Create placeholders', icon='EMPTY_AXIS')
+        row = self.layout.row(align=True)
+        row.operator(CXMap_CreatePlaceholder.bl_idname,
+                             text='Spawn',
                              icon='MOD_ARMATURE').ptype = 'Spawn'
-        self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
-                             text='Create Camera Point',
+        row.operator(CXMap_CreatePlaceholder.bl_idname,
+                             text='Camera',
                              icon='VIEW_CAMERA').ptype = 'CameraPoint'
-        self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
-                             text='Create Spotlight',
+
+        self.layout.label(text='Create lights', icon='OUTLINER_OB_LIGHT')
+        row = self.layout.row(align=True)
+        row.operator(CXMap_CreatePlaceholder.bl_idname,
+                             text='Spot',
                              icon='LIGHT_SPOT').ptype = 'Spot'
-        self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
-                             text='Create Pointlight',
+        row.operator(CXMap_CreatePlaceholder.bl_idname,
+                             text='Point',
                              icon='LIGHT_POINT').ptype = 'Point'
-        self.layout.operator(CXMap_CreatePlaceholder.bl_idname,
-                             text='Create Sunlight',
+        row.operator(CXMap_CreatePlaceholder.bl_idname,
+                             text='Sun',
                              icon='LIGHT_SUN').ptype = 'Sun'
         self.layout.label(text='Finalizing', icon='CHECKMARK')
         self.layout.prop(props, 'name')
@@ -240,11 +304,16 @@ class CXMap_Panel(bpy.types.Panel):
         self.layout.operator(CXMap_Export.bl_idname,
                              text='Export Extra Data',
                              icon='SHADERFX').export_type = 'data'
+        self.layout.label(text='Importing', icon='IMPORT')
+        self.layout.operator(CXMap_ImportData.bl_idname,
+                             text='Import Extra Data',
+                             icon='IMPORT')
 
 
 classes = (CXMap_SetPrefix,
            CXMap_SetAlpha,
            CXMap_CreatePlaceholder,
+           CXMap_ImportData,
            CXMap_Export,
            CXMap_ExportProps,
            CXMap_SetExportLoc,
