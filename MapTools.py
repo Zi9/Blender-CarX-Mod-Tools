@@ -15,6 +15,7 @@ objtypes = ['road',
 
 
 class CXMap_SetPrefix(bpy.types.Operator):
+    """Set the type of objects"""
     bl_idname = 'object.cxmap_setpfx'
     bl_label = 'Set Prefix'
     pfx: bpy.props.StringProperty()
@@ -29,6 +30,7 @@ class CXMap_SetPrefix(bpy.types.Operator):
 
 
 class CXMap_SetAlpha(bpy.types.Operator):
+    """Set alpha for object materials"""
     bl_idname = 'object.cxmap_alpha'
     bl_label = 'Set Alpha'
     alpha: bpy.props.BoolProperty()
@@ -46,6 +48,7 @@ class CXMap_SetAlpha(bpy.types.Operator):
 
 
 class CXMap_CreatePlaceholder(bpy.types.Operator):
+    """Creates a placeholder that will be replaced on loading the map ingame"""
     bl_idname = 'object.cxmap_placeholder'
     bl_label = 'Create Placeholder'
     ptype: bpy.props.StringProperty()
@@ -67,6 +70,7 @@ class CXMap_CreatePlaceholder(bpy.types.Operator):
 
 
 class CXMap_ImportData(bpy.types.Operator):
+    """Import objdata file"""
     bl_idname = 'object.cxmap_importdata'
     bl_label = 'Import objdata'
     filepath: bpy.props.StringProperty(subtype='FILE_PATH')
@@ -132,6 +136,7 @@ class CXMap_ExportProps(bpy.types.PropertyGroup):
 
 
 class CXMap_Export(bpy.types.Operator):
+    """Export the map"""
     bl_idname = 'object.cxmap_exportmap'
     bl_label = 'Export'
     export_type: bpy.props.StringProperty()
@@ -204,6 +209,7 @@ class CXMap_Export(bpy.types.Operator):
 
 
 class CXMap_SetExportLoc(bpy.types.Operator):
+    """Set the export folder"""
     bl_idname = 'object.cxmap_exportloc'
     bl_label = 'Select Export Folder'
     directory: bpy.props.StringProperty(subtype='DIR_PATH')
