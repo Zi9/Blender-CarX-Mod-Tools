@@ -104,12 +104,18 @@ class CXMap_ImportData(bpy.types.Operator):
                 context.active_object.rotation_euler.y = radians(float(obd[4]))
                 context.active_object.rotation_euler.z = radians(float(obd[5]))
                 context.active_object.data.energy = float(obd[6])
+                context.active_object.data.color.r = float(obd[7])
+                context.active_object.data.color.g = float(obd[8])
+                context.active_object.data.color.b = float(obd[9])
             elif otype == 'PointLight':
                 bpy.ops.object.light_add(type='POINT')
                 context.active_object.location.x = float(obd[0])
                 context.active_object.location.y = float(obd[1])
                 context.active_object.location.z = float(obd[2])
                 context.active_object.data.energy = float(obd[3])
+                context.active_object.data.color.r = float(obd[4])
+                context.active_object.data.color.g = float(obd[5])
+                context.active_object.data.color.b = float(obd[6])
             elif otype == 'SunLight':
                 bpy.ops.object.light_add(type='SUN')
                 context.active_object.location.x = float(obd[0])
@@ -119,6 +125,9 @@ class CXMap_ImportData(bpy.types.Operator):
                 context.active_object.rotation_euler.y = radians(float(obd[4]))
                 context.active_object.rotation_euler.z = radians(float(obd[5]))
                 context.active_object.data.energy = float(obd[6])
+                context.active_object.data.color.r = float(obd[7])
+                context.active_object.data.color.g = float(obd[8])
+                context.active_object.data.color.b = float(obd[9])
         file.close()
         return {'FINISHED'}
 
@@ -165,45 +174,54 @@ class CXMap_Export(bpy.types.Operator):
                     points.append(obj)
                 elif obj.name.startswith('Sun'):
                     suns.append(obj)
-            file = open(filepath + '.objdata', 'w')
+            fle = open(filepath + '.objdata', 'w')
             for spwn in spawns:
-                file.write('Spawn:{0} {1} {2} {3} {4} {5}\n'
-                           .format(round(spwn.location.x, 6),
-                                   round(spwn.location.y, 6),
-                                   round(spwn.location.z, 6),
-                                   round(degrees(spwn.rotation_euler.x), 6),
-                                   round(degrees(spwn.rotation_euler.y), 6),
-                                   round(degrees(spwn.rotation_euler.z), 6)))
+                fle.write('Spawn:{0} {1} {2} {3} {4} {5}\n'
+                          .format(round(spwn.location.x, 6),
+                                  round(spwn.location.y, 6),
+                                  round(spwn.location.z, 6),
+                                  round(degrees(spwn.rotation_euler.x), 6),
+                                  round(degrees(spwn.rotation_euler.y), 6),
+                                  round(degrees(spwn.rotation_euler.z), 6)))
             for cam in cameras:
-                file.write('Camera:{0} {1} {2}\n'
-                           .format(round(cam.location.x, 6),
-                                   round(cam.location.y, 6),
-                                   round(cam.location.z, 6)))
+                fle.write('Camera:{0} {1} {2}\n'
+                          .format(round(cam.location.x, 6),
+                                  round(cam.location.y, 6),
+                                  round(cam.location.z, 6)))
             for spt in spots:
-                file.write('SpotLight:{0} {1} {2} {3} {4} {5} {6}\n'
-                           .format(round(spt.location.x, 6),
-                                   round(spt.location.y, 6),
-                                   round(spt.location.z, 6),
-                                   round(degrees(spt.rotation_euler.x), 6),
-                                   round(degrees(spt.rotation_euler.y), 6),
-                                   round(degrees(spt.rotation_euler.z), 6),
-                                   round(spt.data.energy, 6)))
+                fle.write('SpotLight:{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}\n'
+                          .format(round(spt.location.x, 6),
+                                  round(spt.location.y, 6),
+                                  round(spt.location.z, 6),
+                                  round(degrees(spt.rotation_euler.x), 6),
+                                  round(degrees(spt.rotation_euler.y), 6),
+                                  round(degrees(spt.rotation_euler.z), 6),
+                                  round(spt.data.energy, 6),
+                                  round(spt.data.color.r, 6),
+                                  round(spt.data.color.g, 6),
+                                  round(spt.data.color.b, 6)))
             for pnt in points:
-                file.write('PointLight:{0} {1} {2} {3}\n'
-                           .format(round(pnt.location.x, 6),
-                                   round(pnt.location.y, 6),
-                                   round(pnt.location.z, 6),
-                                   round(pnt.data.energy, 6)))
+                fle.write('PointLight:{0} {1} {2} {3} {4} {5} {6}\n'
+                          .format(round(pnt.location.x, 6),
+                                  round(pnt.location.y, 6),
+                                  round(pnt.location.z, 6),
+                                  round(pnt.data.energy, 6),
+                                  round(pnt.data.color.r, 6),
+                                  round(pnt.data.color.g, 6),
+                                  round(pnt.data.color.b, 6)))
             for sun in suns:
-                file.write('SunLight:{0} {1} {2} {3} {4} {5} {6}\n'
-                           .format(round(sun.location.x, 6),
-                                   round(sun.location.y, 6),
-                                   round(sun.location.z, 6),
-                                   round(degrees(sun.rotation_euler.x), 6),
-                                   round(degrees(sun.rotation_euler.y), 6),
-                                   round(degrees(sun.rotation_euler.z), 6),
-                                   round(sun.data.energy, 6)))
-            file.close()
+                fle.write('SunLight:{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}\n'
+                          .format(round(sun.location.x, 6),
+                                  round(sun.location.y, 6),
+                                  round(sun.location.z, 6),
+                                  round(degrees(sun.rotation_euler.x), 6),
+                                  round(degrees(sun.rotation_euler.y), 6),
+                                  round(degrees(sun.rotation_euler.z), 6),
+                                  round(sun.data.energy, 6),
+                                  round(sun.data.color.r, 6),
+                                  round(sun.data.color.g, 6),
+                                  round(sun.data.color.b, 6)))
+            fle.close()
             self.report({'INFO'}, "Exported Extra Data")
         return {'FINISHED'}
 
