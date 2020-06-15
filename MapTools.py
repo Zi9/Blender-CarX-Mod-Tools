@@ -142,6 +142,22 @@ class CXMap_ExportProps(bpy.types.PropertyGroup):
                                    description='Set the name of the map')
     path: bpy.props.StringProperty(name='Path',
                                    description='Path where to save the map')
+    texexp: bpy.props.EnumProperty(
+        items=[('AUTO', 'Auto',
+                'Use Relative paths with subdirectories only', 0),
+               ('ABSOLUTE', 'Absolute',
+                'Always write absolute paths', 1),
+               ('RELATIVE', 'Relative',
+                'Always write relative paths (where possible)', 2),
+               ('MATCH', 'Match',
+                'Match Absolute/Relative setting with input path', 3),
+               ('STRIP', 'Strip',
+                'Filename only', 4),
+               ('COPY', 'Copy',
+                'Copy the file to the destination path (or subdirectory)', 5)],
+        name='Texture mode',
+        description='Set the texture output mode for OBJ exporter'
+    )
 
 
 class CXMap_Export(bpy.types.Operator):
@@ -155,7 +171,7 @@ class CXMap_Export(bpy.types.Operator):
         if self.export_type == 'obj':
             bpy.ops.export_scene.obj(filepath=filepath+'.obj',
                                      use_selection=False,
-                                     path_mode='STRIP')
+                                     path_mode=context.scene.CX_ExpP.texexp)
             self.report({'INFO'}, "Exported Map")
         else:
             spawns = []
@@ -322,6 +338,9 @@ class CXMap_Panel(bpy.types.Panel):
         row.prop(props, 'path')
         row.operator(CXMap_SetExportLoc.bl_idname,
                      text='', icon='FILE_FOLDER')
+        row = self.layout.row(align=True)
+        row.label(text='Texture mode:')
+        row.prop(props, 'texexp', text='')
         self.layout.operator(CXMap_Export.bl_idname,
                              text='Export Map',
                              icon='EXPORT').export_type = 'obj'
