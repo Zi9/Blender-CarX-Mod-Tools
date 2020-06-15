@@ -36,8 +36,8 @@ class CXMap_SetAlpha(bpy.types.Operator):
     alpha: bpy.props.BoolProperty()
 
     def execute(self, context):
-        for o in context.selected_objects:
-            for mslot in o.material_slots:
+        for obj in context.selected_objects:
+            for mslot in obj.material_slots:
                 if self.alpha:
                     if not mslot.material.name.startswith('alpha_'):
                         mslot.material.name = 'alpha_' + mslot.material.name
@@ -156,8 +156,7 @@ class CXMap_ExportProps(bpy.types.PropertyGroup):
                ('COPY', 'Copy',
                 'Copy the file to the destination path (or subdirectory)', 5)],
         name='Texture mode',
-        description='Set the texture output mode for OBJ exporter'
-    )
+        description='Set the texture output mode for OBJ exporter')
 
 
 class CXMap_Export(bpy.types.Operator):
@@ -332,6 +331,7 @@ class CXMap_Panel(bpy.types.Panel):
         row.operator(CXMap_CreatePlaceholder.bl_idname,
                              text='Sun',
                              icon='LIGHT_SUN').ptype = 'Sun'
+
         self.layout.label(text='Finalizing', icon='CHECKMARK')
         self.layout.prop(props, 'name')
         row = self.layout.row(align=True)
@@ -347,6 +347,7 @@ class CXMap_Panel(bpy.types.Panel):
         self.layout.operator(CXMap_Export.bl_idname,
                              text='Export Extra Data',
                              icon='SHADERFX').export_type = 'data'
+
         self.layout.label(text='Importing', icon='IMPORT')
         self.layout.operator(CXMap_ImportData.bl_idname,
                              text='Import Extra Data',
