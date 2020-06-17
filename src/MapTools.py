@@ -126,6 +126,7 @@ class CXMap_ImportData(bpy.types.Operator):
                 context.active_object.data.color.r = float(obd[7])
                 context.active_object.data.color.g = float(obd[8])
                 context.active_object.data.color.b = float(obd[9])
+                context.active_object.data.spot_size = radians(float(obd[10]))
             elif otype == 'PointLight':
                 bpy.ops.object.light_add(type='POINT')
                 context.active_object.location.x = float(obd[0])
@@ -223,7 +224,7 @@ class CXMap_Export(bpy.types.Operator):
                                   round(cam.location.y, 6),
                                   round(cam.location.z, 6)))
             for spt in spots:
-                fle.write('SpotLight:{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}\n'
+                fle.write('SpotLight:{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10}\n'
                           .format(round(spt.location.x, 6),
                                   round(spt.location.y, 6),
                                   round(spt.location.z, 6),
@@ -233,7 +234,8 @@ class CXMap_Export(bpy.types.Operator):
                                   round(spt.data.energy, 6),
                                   round(spt.data.color.r, 6),
                                   round(spt.data.color.g, 6),
-                                  round(spt.data.color.b, 6)))
+                                  round(spt.data.color.b, 6),
+                                  round(degrees(spt.data.spot_size), 6)))
             for pnt in points:
                 fle.write('PointLight:{0} {1} {2} {3} {4} {5} {6}\n'
                           .format(round(pnt.location.x, 6),
