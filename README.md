@@ -8,3 +8,9 @@ It creates an extra panel with buttons for easy material setting and placeholder
 
 ## Installation
 Firstly download the latest version of the addon from [Releases](https://github.com/Zi9/Blender-CarX-Mod-Tools/releases)
+
+Then open up Blender and go to Edit->Preferences...
+
+In the preferences window locate the Add-ons tab
+
+From there you can click the Install button and select the zip you just downloaded
