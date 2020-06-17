@@ -51,7 +51,8 @@ class CXMap_SetAlpha(bpy.types.Operator):
                                           bsdf.inputs['Alpha'])
                 else:
                     if mslot.material.name.startswith('alpha_'):
-                        mslot.material.name = mslot.material.name.replace('alpha_', '', 1)
+                        rename = mslot.material.name.replace('alpha_', '', 1)
+                        mslot.material.name = rename
                         mslot.material.blend_method = 'OPAQUE'
                         ndt = mslot.material.node_tree
                         if ('Image Texture' in ndt.nodes and
@@ -224,7 +225,7 @@ class CXMap_Export(bpy.types.Operator):
                                   round(cam.location.y, 6),
                                   round(cam.location.z, 6)))
             for spt in spots:
-                fle.write('SpotLight:{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10}\n'
+                fle.write('SpotLight:{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} '
                           .format(round(spt.location.x, 6),
                                   round(spt.location.y, 6),
                                   round(spt.location.z, 6),
@@ -234,8 +235,9 @@ class CXMap_Export(bpy.types.Operator):
                                   round(spt.data.energy, 6),
                                   round(spt.data.color.r, 6),
                                   round(spt.data.color.g, 6),
-                                  round(spt.data.color.b, 6),
-                                  round(degrees(spt.data.spot_size), 6)))
+                                  round(spt.data.color.b, 6)) +
+                          '{0}\n'
+                          .format(round(degrees(spt.data.spot_size), 6)))
             for pnt in points:
                 fle.write('PointLight:{0} {1} {2} {3} {4} {5} {6}\n'
                           .format(round(pnt.location.x, 6),
@@ -335,23 +337,23 @@ class CXMap_Panel(bpy.types.Panel):
         self.layout.label(text='Create placeholders', icon='EMPTY_AXIS')
         row = self.layout.row(align=True)
         row.operator(CXMap_CreatePlaceholder.bl_idname,
-                             text='Spawn',
-                             icon='MOD_ARMATURE').ptype = 'Spawn'
+                     text='Spawn',
+                     icon='MOD_ARMATURE').ptype = 'Spawn'
         row.operator(CXMap_CreatePlaceholder.bl_idname,
-                             text='Camera',
-                             icon='VIEW_CAMERA').ptype = 'CameraPoint'
+                     text='Camera',
+                     icon='VIEW_CAMERA').ptype = 'CameraPoint'
 
         self.layout.label(text='Create lights', icon='OUTLINER_OB_LIGHT')
         row = self.layout.row(align=True)
         row.operator(CXMap_CreatePlaceholder.bl_idname,
-                             text='Spot',
-                             icon='LIGHT_SPOT').ptype = 'Spot'
+                     text='Spot',
+                     icon='LIGHT_SPOT').ptype = 'Spot'
         row.operator(CXMap_CreatePlaceholder.bl_idname,
-                             text='Point',
-                             icon='LIGHT_POINT').ptype = 'Point'
+                     text='Point',
+                     icon='LIGHT_POINT').ptype = 'Point'
         row.operator(CXMap_CreatePlaceholder.bl_idname,
-                             text='Sun',
-                             icon='LIGHT_SUN').ptype = 'Sun'
+                     text='Sun',
+                     icon='LIGHT_SUN').ptype = 'Sun'
 
         self.layout.label(text='Finalizing', icon='CHECKMARK')
         self.layout.prop(props, 'name')
@@ -394,4 +396,4 @@ def register():
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
-    del(bpy.types.Scene.CX_ExpP)
+    del bpy.types.Scene.CX_ExpP
