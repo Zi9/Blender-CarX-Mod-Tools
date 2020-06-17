@@ -41,9 +41,28 @@ class CXMap_SetAlpha(bpy.types.Operator):
                 if self.alpha:
                     if not mslot.material.name.startswith('alpha_'):
                         mslot.material.name = 'alpha_' + mslot.material.name
+                        mslot.material.blend_method = 'BLEND'
+                        ndt = mslot.material.node_tree
+                        if ('Image Texture' in ndt.nodes and
+                                'Principled BSDF' in ndt.nodes):
+                            tex = ndt.nodes['Image Texture']
+                            bsdf = ndt.nodes['Principled BSDF']
+                            ndt.links.new(tex.outputs['Alpha'],
+                                          bsdf.inputs['Alpha'])
                 else:
                     if mslot.material.name.startswith('alpha_'):
                         mslot.material.name = mslot.material.name.replace('alpha_', '', 1)
+                        mslot.material.blend_method = 'OPAQUE'
+                        ndt = mslot.material.node_tree
+                        if ('Image Texture' in ndt.nodes and
+                                'Principled BSDF' in ndt.nodes):
+                            tex = ndt.nodes['Image Texture']
+                            bsdf = ndt.nodes['Principled BSDF']
+                            for lnk in ndt.links:
+                                if (lnk.from_socket == tex.outputs['Alpha'] and
+                                        lnk.to_socket == bsdf.inputs['Alpha']):
+                                    ndt.links.remove(lnk)
+                                    break
         return {'FINISHED'}
 
 
