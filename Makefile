@@ -10,3 +10,6 @@ build_addon:
 	echo "Build finished. Cleaning..."
 	rm -r zi_cx_tools
 	echo "Done"
+
+clean:
+	rm carx_map_tools_v*.zip
