@@ -25,7 +25,9 @@ class CXMap_SetPrefix(bpy.types.Operator):
 
     def execute(self, context):
         for i in context.selected_objects:
-            if i.name.split("_")[0] in objtypes:
+            if i.name.startswith(self.pfx + "_"):
+                i.name = i.name.replace(self.pfx + "_", "")
+            elif i.name.split("_")[0] in objtypes:
                 i.name = i.name.replace(i.name.split("_")[0], self.pfx, 1)
             else:
                 i.name = self.pfx + "_" + i.name
