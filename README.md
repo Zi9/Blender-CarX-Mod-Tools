@@ -14,3 +14,6 @@ Then open up Blender and go to Edit->Preferences...
 In the preferences window locate the Add-ons tab
 
 From there you can click the Install button and select the zip you just downloaded
+
+## Mapping guide
+[Map creation guide created by Hackerkm](https://docs.google.com/document/d/1SZQSkkGJAXooRqrxSPqEP5OEAjNVGmVTZTxQuk-xVQg/edit?usp=sharing)
