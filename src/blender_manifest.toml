@@ -1,0 +1,14 @@
+schema_version = "1.0.0"
+id = "blender_carx_tools"
+name = "Zi9s CarX Map Tools"
+version = "1.4.0"
+tagline = "Toolkit to assist creating maps for CarX Drift Racing Online"
+maintainer = "Zi9"
+type = "add-on"
+tags = ["Development"]
+blender_version_min = "4.2.0"
+license = ["SPDX:GPL-2.0-or-later"]
+website = "https://zi9.github.io"
+copyright = [
+    "2024 Zi9"
+]

@@ -13,6 +13,9 @@ objtypes = [
     "dirt",
     "nocol",
     "rb",
+    "alpha",
+    "alphaCol",
+    "alphaLit"
 ]
 
 
@@ -206,9 +209,8 @@ class CXMap_Export(bpy.types.Operator):
     def execute(self, context):
         filepath = context.scene.CX_ExpP.path + context.scene.CX_ExpP.name
         if self.export_type == "obj":
-            bpy.ops.export_scene.obj(
+            bpy.ops.wm.obj_export(
                 filepath=filepath + ".obj",
-                use_selection=False,
                 path_mode=context.scene.CX_ExpP.texexp,
             )
             self.report({"INFO"}, "Exported Map")

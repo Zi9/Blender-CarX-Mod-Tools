@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := build_addon
-VER := $(shell grep version ./src/__init__.py | cut -d '(' -f 2 | cut -d ')' -f 1 | sed 's/, /./g')
+VER := $(shell grep -E '^version = ' ./src/blender_manifest.toml | cut -d '"' -f 2)
 
 build_addon:
 	@echo "Building blender addon..."
