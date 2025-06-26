@@ -197,6 +197,10 @@ class CXMap_ExportProps(bpy.types.PropertyGroup):
         name="Texture mode",
         description="Set the texture output mode for OBJ exporter",
     )
+    meshes_only: bpy.props.BoolProperty(
+        name="Export only meshes",
+        description="Ignore Curves and other non mesh objects while exporting map"
+    )
 
 
 class CXMap_Export(bpy.types.Operator):
@@ -209,9 +213,13 @@ class CXMap_Export(bpy.types.Operator):
     def execute(self, context):
         filepath = context.scene.CX_ExpP.path + context.scene.CX_ExpP.name
         if self.export_type == "obj":
+            if context.scene.CX_ExpP.meshes_only:
+                bpy.ops.object.select_by_type(extend=False, type='MESH')
+                
             bpy.ops.wm.obj_export(
                 filepath=filepath + ".obj",
                 path_mode=context.scene.CX_ExpP.texexp,
+                export_selected_objects=context.scene.CX_ExpP.meshes_only
             )
             self.report({"INFO"}, "Exported Map")
         else:
@@ -399,6 +407,8 @@ class CXMap_Panel(bpy.types.Panel):
         row = self.layout.row(align=True)
         row.label(text="Texture mode:")
         row.prop(props, "texexp", text="")
+        row = self.layout.row(align=True)
+        row.prop(props, "meshes_only")
         self.layout.operator(
             CXMap_Export.bl_idname, text="Export Map", icon="EXPORT"
         ).export_type = "obj"
