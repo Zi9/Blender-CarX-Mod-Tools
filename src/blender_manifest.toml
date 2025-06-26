@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 id = "blender_carx_tools"
 name = "Zi9s CarX Map Tools"
-version = "1.5.0"
+version = "1.5.1"
 tagline = "Toolkit to assist creating maps for CarX Drift Racing Online"
 maintainer = "Zi9"
 type = "add-on"
